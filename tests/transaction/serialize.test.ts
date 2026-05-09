@@ -1,9 +1,15 @@
 import { describe, expect, it } from 'vitest'
 
 import { serializeMagnusTransaction } from '../../src/transaction/serialize.js'
-import { getMagnusSignatureHash, getMagnusTransactionHash } from '../../src/transaction/hash.js'
+import {
+  getMagnusFeePayerSignatureHash,
+  getMagnusSignatureHash,
+  getMagnusTransactionHash,
+} from '../../src/transaction/hash.js'
 
 import { loadGolden, txFromJson } from '../golden/loader.js'
+
+const SENDER_ADDRESS = '0x7e5f4552091a69125d5dfcb7b8c2659029395bdf' as const
 
 const golden = loadGolden()
 
@@ -39,6 +45,14 @@ describe('golden vectors', () => {
         const signedTx = { ...tx, signature: fixture.signature_bytes }
         expect(getMagnusTransactionHash(signedTx)).toBe(fixture.tx_hash)
       })
+
+      if (fixture.fee_payer_signature_hash) {
+        it('fee_payer_signature_hash matches Rust', () => {
+          expect(getMagnusFeePayerSignatureHash(tx, SENDER_ADDRESS)).toBe(
+            fixture.fee_payer_signature_hash,
+          )
+        })
+      }
     })
   }
 })

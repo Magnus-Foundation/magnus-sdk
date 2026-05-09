@@ -38,6 +38,7 @@ export {
 } from './transaction/serialize.js'
 export { parseMagnusTransaction } from './transaction/parse.js'
 export {
+  getMagnusFeePayerSignatureHash,
   getMagnusSignatureHash,
   getMagnusTransactionHash,
 } from './transaction/hash.js'

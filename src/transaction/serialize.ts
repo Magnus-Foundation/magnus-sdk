@@ -8,7 +8,7 @@ import {
   toRlp,
 } from 'viem'
 
-import { MAGNUS_TX_TYPE } from '../constants.js'
+import { FEE_PAYER_SIGNATURE_MAGIC_BYTE, MAGNUS_TX_TYPE } from '../constants.js'
 import type {
   AccessListEntry,
   Call,
@@ -21,13 +21,16 @@ import type {
 /**
  * Three serialization purposes per DESIGN.md §6.2:
  * - `signing`: bytes the sender signs to authorize the tx.
- * - `fee-payer-signing`: bytes a sponsor signs (deferred to v0.2 — not implemented).
+ * - `fee-payer-signing`: bytes a sponsor signs to commit to gas-token sponsorship.
+ *   Wire-distinguished by magic byte `0x78` (instead of `0x76`) so the sponsor's
+ *   signature cannot be replayed as a tx broadcast. Sponsor commits to fee_token.
  * - `tx-on-wire`: bytes broadcast via `eth_sendRawTransaction`.
  */
-export type SerializeMagnusPurpose = 'signing' | 'tx-on-wire'
+export type SerializeMagnusPurpose = 'signing' | 'fee-payer-signing' | 'tx-on-wire'
 
 export type SerializeMagnusOptions =
   | { purpose: 'signing' }
+  | { purpose: 'fee-payer-signing'; sender: Address }
   | { purpose: 'tx-on-wire'; signature: Hex }
 
 type RlpItem = Hex | RlpItem[]
@@ -213,6 +216,22 @@ export function serializeMagnusTransaction(
     const feePayerSlot: RlpItem = tx.feePayerSignature != null ? '0x00' : EMPTY
     const fields = buildFields(tx, { skipFeeToken, feePayerSlot })
     return concatHex([toHex(MAGNUS_TX_TYPE), toRlp(fields)])
+  }
+
+  if (purpose === 'fee-payer-signing') {
+    if (options?.purpose !== 'fee-payer-signing') {
+      throw new Error(
+        'serialize: fee-payer-signing requires options.sender (the tx sender address)',
+      )
+    }
+    // Sponsor commits to the full tx including fee_token, with the sender
+    // address inlined where the fee_payer_signature would normally live. Magic
+    // byte 0x78 prevents this hash from being mistaken for a tx broadcast.
+    const fields = buildFields(tx, {
+      skipFeeToken: false,
+      feePayerSlot: options.sender.toLowerCase() as Hex,
+    })
+    return concatHex([toHex(FEE_PAYER_SIGNATURE_MAGIC_BYTE), toRlp(fields)])
   }
 
   // tx-on-wire

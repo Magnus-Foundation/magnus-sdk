@@ -387,8 +387,9 @@ Must ship:
 
 Defer to v0.2.0:
 
-- `fee-payer-signing` hash variant (sponsorship UX) — wallet doesn't surface
-  sponsorship in MVP
+- ~~`fee-payer-signing` hash variant~~ — shipped in 0.1 via
+  `getMagnusFeePayerSignatureHash(tx, sender)` and
+  `serializeMagnusTransaction(..., { purpose: 'fee-payer-signing', sender })`.
 - Sub-path exports for tree-shaking
 - Additional locales beyond SEA
 - WebAuthn + Keychain signature constructors (only verifiers in v0.1)

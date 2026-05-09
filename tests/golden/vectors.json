@@ -3,6 +3,7 @@
   "fixtures": [
     {
       "description": "Basic mUSD transfer, no fee_token, no fee payer.",
+      "fee_payer_signature_hash": null,
       "name": "basic_musd_transfer",
       "signature_bytes": "0xb1b40b3b29fbeaac3f7f352bf2afc811da517e157fbc2ad37eaf063c67129a3f749e3e3d5dcb4cdb3b32eeef5c7fa12158de12b5ad0f5a68123a08408569b0591b",
       "signature_hash": "0x93151977d82dea8866484ad2fa36ed25fa3206ca28913c1d706708e56ca162d8",
@@ -34,6 +35,7 @@
     },
     {
       "description": "mUSD transfer with fee paid in mVND.",
+      "fee_payer_signature_hash": null,
       "name": "fee_token_mvnd",
       "signature_bytes": "0xe88db50f965f3d33f158913b4f0bae55f94a224ed0a76364681b82e185c50dfd3ab6b058d83ff5ef9bbd4dde96c0c6caa727b75b1e344aef519a992c7fe07c9c1b",
       "signature_hash": "0x2a3412e8a0108031b816e5fb0d8c41fcc7064db885269442303a15e92b453852",
@@ -65,6 +67,7 @@
     },
     {
       "description": "mUSD transfer with valid_before timestamp set.",
+      "fee_payer_signature_hash": null,
       "name": "valid_before_set",
       "signature_bytes": "0x1f2fabc374061c839673f9202d57f7a9dcbdbbec29b38083cf7fb00c42c03a5c3dcec83d7ff9b1b979836af60138e56fa99276836731dae6e33e764787730c5f1c",
       "signature_hash": "0xf058a04563be3c0280f9c43ef4e6865d733968a309df204b7701215900db7440",
@@ -96,6 +99,7 @@
     },
     {
       "description": "mUSD transfer with both valid_after and valid_before set.",
+      "fee_payer_signature_hash": null,
       "name": "valid_window_both",
       "signature_bytes": "0x18e3bd98630abc1dc4be48cdebb8503afb5d11499865aa96a5ccbe062692fe4a2e8b1cc3a981f587b9eed626bdc3f15c103c691f1d278246de05d39acbe1d2ee1c",
       "signature_hash": "0xc5201950d766c9382135b52fcc22f4aa65d8cf18301c44201e3c1ef2eef92104",
@@ -127,6 +131,7 @@
     },
     {
       "description": "Sponsored mUSD transfer where a fee payer signs the gas commitment.",
+      "fee_payer_signature_hash": "0x7aabf8c1e5bffe1bea73806ceb0a98941504cc6f0c282fc2353685a44cb1f85b",
       "name": "sponsored_fee_payer",
       "signature_bytes": "0x9b8f278dacb12cd923ec97a5d8cd06551dc2109dd1b8a0b6af9c4cd857e125dc7dcc225d497fa71df996f55312d3141f2a5ade18fd7c1072f032fd7412279ea31c",
       "signature_hash": "0xd3adecabc777a5fde390b2a3f9366ab032f39d87ca05b525df3ca3aa0cce855a",
@@ -162,6 +167,7 @@
     },
     {
       "description": "mUSD transfer with one EIP-7702-style delegation in magnus_authorization_list.",
+      "fee_payer_signature_hash": null,
       "name": "magnus_authorization_list_one",
       "signature_bytes": "0xb2c8eec74ae1f7714a42c930a4b0384b5f2cbbd44a507118555184cb34de32c50bb331b952401237cf3b0c3dad790233469a8240003e7237b8707b072002d3521b",
       "signature_hash": "0x6ea3a4cf93503b568b48e7e15338c8c56182fb31cc971cfca421cede56de1fef",
@@ -200,6 +206,7 @@
     },
     {
       "description": "mUSD transfer that provisions a P256 access key via key_authorization.",
+      "fee_payer_signature_hash": null,
       "name": "key_authorization_p256",
       "signature_bytes": "0x1e7673e37060c27445a1c3d49a6d67d18cd5cb3c09e368fc92f87a557a65759b53a3d5f3bb6f513b5874767cff0f47e0554b0b8cfbc10a2263f0b99e277f5f211b",
       "signature_hash": "0xa9c025e9f1effb536d49507caa3fc3c0adf4181ba0e87b231c61041403efd8c2",

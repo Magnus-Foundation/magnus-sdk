@@ -61,6 +61,7 @@ export type GoldenFixture = {
   tx_input: GoldenTxInputJson
   signing_hex: Hex
   signature_hash: Hex
+  fee_payer_signature_hash: Hex | null
   wire_hex: Hex
   tx_hash: Hex
   signature_bytes: Hex

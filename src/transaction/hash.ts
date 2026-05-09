@@ -1,4 +1,4 @@
-import { type Hex, keccak256 } from 'viem'
+import { type Address, type Hex, keccak256 } from 'viem'
 
 import {
   type MagnusSignedTransaction,
@@ -16,6 +16,24 @@ import { serializeMagnusTransaction } from './serialize.js'
  */
 export function getMagnusSignatureHash(tx: MagnusTransaction): Hex {
   return keccak256(serializeMagnusTransaction(tx, { purpose: 'signing' }))
+}
+
+/**
+ * Compute the hash a sponsor signs to commit to fee-token sponsorship of a
+ * Magnus transaction. The hash domain-separates from the sender's signing
+ * hash via magic byte `0x78`, so a sponsor signature can't be replayed as a
+ * tx broadcast. Equivalent to `MagnusTransaction::fee_payer_signature_hash(sender)`.
+ *
+ * The resulting `Signature` (yParity, r, s) is what populates `feePayerSignature`
+ * on the transaction before the sender produces their own signature.
+ */
+export function getMagnusFeePayerSignatureHash(
+  tx: MagnusTransaction,
+  sender: Address,
+): Hex {
+  return keccak256(
+    serializeMagnusTransaction(tx, { purpose: 'fee-payer-signing', sender }),
+  )
 }
 
 /**
