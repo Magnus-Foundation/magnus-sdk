@@ -40,7 +40,7 @@ describe('magnusDevnet chain', () => {
 
   it('points at the staccato RPC endpoint', () => {
     expect(magnusDevnet.rpcUrls.default.http[0]).toBe(
-      'http://rpc.staccato.magnuschain.xyz:8545',
+      'http://rpc-staccato.magnuschain.xyz:8545',
     )
   })
 })

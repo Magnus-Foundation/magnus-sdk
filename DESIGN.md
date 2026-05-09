@@ -204,7 +204,7 @@ The wallet signs `signature_hash` to authorize a tx; a sponsor (if any) signs
 |---|---|---|---|
 | `magnus` (mainnet) | 7777 | TBD (`https://rpc.magnus.example/`) | TBD |
 | `magnusTestnet` | 7776 | TBD (`https://rpc.testnet.magnus.example/`) | TBD |
-| `magnusDevnet` (Staccato) | 73730 | `http://rpc.staccato.magnuschain.xyz:8545` | `https://devnet.magnuschain.xyz` |
+| `magnusDevnet` (Staccato) | 73730 | `http://rpc-staccato.magnuschain.xyz:8545` | `https://devnet.magnuschain.xyz` |
 
 `nativeCurrency = { name: 'MagnusUSD', symbol: 'mUSD', decimals: 6 }` for all.
 

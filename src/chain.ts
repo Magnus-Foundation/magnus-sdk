@@ -46,7 +46,7 @@ export const magnusDevnet = defineChain({
   name: 'Magnus Devnet (Staccato)',
   nativeCurrency,
   rpcUrls: {
-    default: { http: ['http://rpc.staccato.magnuschain.xyz:8545'] },
+    default: { http: ['http://rpc-staccato.magnuschain.xyz:8545'] },
   },
   blockExplorers: {
     default: {
