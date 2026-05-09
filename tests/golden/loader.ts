@@ -4,7 +4,13 @@ import { dirname, resolve } from 'node:path'
 
 import type { Hex } from 'viem'
 
-import type { Call, MagnusTransaction } from '../../src/transaction/types.js'
+import type {
+  Call,
+  KeyAuthorization,
+  MagnusAuthorization,
+  MagnusTransaction,
+  Secp256k1Signature,
+} from '../../src/transaction/types.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -13,6 +19,23 @@ export type GoldenCallJson = {
   to: string | null
   value: string
   input: string
+}
+
+export type GoldenAuthJson = {
+  chainId: string
+  address: string
+  nonce: string
+  signature: string
+}
+
+export type GoldenFeePayerJson = {
+  yParity: 0 | 1
+  r: string
+  s: string
+}
+
+export type GoldenKeyAuthJson = {
+  encoded: string
 }
 
 export type GoldenTxInputJson = {
@@ -27,7 +50,9 @@ export type GoldenTxInputJson = {
   validBefore: string | null
   validAfter: string | null
   feeToken: string | null
-  magnusAuthorizationList: unknown[]
+  feePayerSignature: GoldenFeePayerJson | null
+  magnusAuthorizationList: GoldenAuthJson[]
+  keyAuthorization: GoldenKeyAuthJson | null
 }
 
 export type GoldenFixture = {
@@ -63,6 +88,29 @@ export function callsFromJson(calls: GoldenCallJson[]): Call[] {
   }))
 }
 
+function feePayerFromJson(json: GoldenFeePayerJson | null): Secp256k1Signature | null {
+  if (json == null) return null
+  return {
+    yParity: json.yParity,
+    r: BigInt(json.r),
+    s: BigInt(json.s),
+  }
+}
+
+function authListFromJson(list: GoldenAuthJson[]): MagnusAuthorization[] {
+  return list.map((a) => ({
+    chainId: BigInt(a.chainId),
+    address: a.address.toLowerCase() as `0x${string}`,
+    nonce: BigInt(a.nonce),
+    signature: a.signature as Hex,
+  }))
+}
+
+function keyAuthFromJson(json: GoldenKeyAuthJson | null): KeyAuthorization | null {
+  if (json == null) return null
+  return { encoded: json.encoded as Hex }
+}
+
 export function txFromJson(input: GoldenTxInputJson): MagnusTransaction {
   return {
     chainId: input.chainId,
@@ -76,8 +124,8 @@ export function txFromJson(input: GoldenTxInputJson): MagnusTransaction {
     validBefore: input.validBefore == null ? null : BigInt(input.validBefore),
     validAfter: input.validAfter == null ? null : BigInt(input.validAfter),
     feeToken: input.feeToken == null ? null : (input.feeToken.toLowerCase() as `0x${string}`),
-    feePayerSignature: null,
-    magnusAuthorizationList: [],
-    keyAuthorization: null,
+    feePayerSignature: feePayerFromJson(input.feePayerSignature),
+    magnusAuthorizationList: authListFromJson(input.magnusAuthorizationList),
+    keyAuthorization: keyAuthFromJson(input.keyAuthorization),
   }
 }

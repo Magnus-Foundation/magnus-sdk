@@ -18,8 +18,10 @@
           }
         ],
         "chainId": 7777,
+        "feePayerSignature": null,
         "feeToken": null,
         "gas": "0x186a0",
+        "keyAuthorization": null,
         "magnusAuthorizationList": [],
         "maxFeePerGas": "0x9502f9000",
         "maxPriorityFeePerGas": "0x3b9aca00",
@@ -47,8 +49,10 @@
           }
         ],
         "chainId": 7777,
+        "feePayerSignature": null,
         "feeToken": "0x20c0000000000000000000000000000000000020",
         "gas": "0x186a0",
+        "keyAuthorization": null,
         "magnusAuthorizationList": [],
         "maxFeePerGas": "0x9502f9000",
         "maxPriorityFeePerGas": "0x3b9aca00",
@@ -76,8 +80,10 @@
           }
         ],
         "chainId": 7777,
+        "feePayerSignature": null,
         "feeToken": null,
         "gas": "0x186a0",
+        "keyAuthorization": null,
         "magnusAuthorizationList": [],
         "maxFeePerGas": "0x9502f9000",
         "maxPriorityFeePerGas": "0x3b9aca00",
@@ -105,8 +111,10 @@
           }
         ],
         "chainId": 7777,
+        "feePayerSignature": null,
         "feeToken": null,
         "gas": "0x186a0",
+        "keyAuthorization": null,
         "magnusAuthorizationList": [],
         "maxFeePerGas": "0x9502f9000",
         "maxPriorityFeePerGas": "0x3b9aca00",
@@ -116,6 +124,112 @@
         "validBefore": "0x6553f22c"
       },
       "wire_hex": "0x76f8c5821e61843b9aca008509502f9000830186a0f85ef85c9420c000000000000000000000000000000000001080b844a9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100c08003846553f22c846553f1008080c0b84118e3bd98630abc1dc4be48cdebb8503afb5d11499865aa96a5ccbe062692fe4a2e8b1cc3a981f587b9eed626bdc3f15c103c691f1d278246de05d39acbe1d2ee1c"
+    },
+    {
+      "description": "Sponsored mUSD transfer where a fee payer signs the gas commitment.",
+      "name": "sponsored_fee_payer",
+      "signature_bytes": "0x9b8f278dacb12cd923ec97a5d8cd06551dc2109dd1b8a0b6af9c4cd857e125dc7dcc225d497fa71df996f55312d3141f2a5ade18fd7c1072f032fd7412279ea31c",
+      "signature_hash": "0xd3adecabc777a5fde390b2a3f9366ab032f39d87ca05b525df3ca3aa0cce855a",
+      "signing_hex": "0x76f87a821e61843b9aca008509502f9000830186a0f85ef85c9420c000000000000000000000000000000000001080b844a9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100c0800480808000c0",
+      "tx_hash": "0xe084b8ee1e9f0c50169468c3f84782857c98afb8b236cd3ea1c59897f9e55bfb",
+      "tx_input": {
+        "accessList": [],
+        "calls": [
+          {
+            "input": "0xa9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100",
+            "to": "0x20c0000000000000000000000000000000000010",
+            "value": "0x0"
+          }
+        ],
+        "chainId": 7777,
+        "feePayerSignature": {
+          "r": "0x1675266b20f79f2d2fbd2f3f6ef307a61e93f63801635c07a363eb869d44d7f6",
+          "s": "0x17af34c7d31d909bf667adc07db14a960a5f5d3e7a08858c7b60929263e554fb",
+          "yParity": 0
+        },
+        "feeToken": "0x20c0000000000000000000000000000000000020",
+        "gas": "0x186a0",
+        "keyAuthorization": null,
+        "magnusAuthorizationList": [],
+        "maxFeePerGas": "0x9502f9000",
+        "maxPriorityFeePerGas": "0x3b9aca00",
+        "nonce": "0x4",
+        "nonceKey": "0x0",
+        "validAfter": null,
+        "validBefore": null
+      },
+      "wire_hex": "0x76f90115821e61843b9aca008509502f9000830186a0f85ef85c9420c000000000000000000000000000000000001080b844a9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100c0800480809420c0000000000000000000000000000000000020f84380a01675266b20f79f2d2fbd2f3f6ef307a61e93f63801635c07a363eb869d44d7f6a017af34c7d31d909bf667adc07db14a960a5f5d3e7a08858c7b60929263e554fbc0b8419b8f278dacb12cd923ec97a5d8cd06551dc2109dd1b8a0b6af9c4cd857e125dc7dcc225d497fa71df996f55312d3141f2a5ade18fd7c1072f032fd7412279ea31c"
+    },
+    {
+      "description": "mUSD transfer with one EIP-7702-style delegation in magnus_authorization_list.",
+      "name": "magnus_authorization_list_one",
+      "signature_bytes": "0xb2c8eec74ae1f7714a42c930a4b0384b5f2cbbd44a507118555184cb34de32c50bb331b952401237cf3b0c3dad790233469a8240003e7237b8707b072002d3521b",
+      "signature_hash": "0x6ea3a4cf93503b568b48e7e15338c8c56182fb31cc971cfca421cede56de1fef",
+      "signing_hex": "0x76f8d9821e61843b9aca008509502f9000830186a0f85ef85c9420c000000000000000000000000000000000001080b844a9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100c0800580808080f85ef85c821e6194000000000000000000000000000000000000ca1107b84127089d2f45561578c0099d768b4ca736c3b65cc39541763cb74e952ce4b20c8308caff0eac1042c4d5ac2308a6997604c0425b177f06b8869504e3e9bda93ac21c",
+      "tx_hash": "0x6da485eab8865c67bf49d95540dab8097709660c7b3a2d09411b54355985c62b",
+      "tx_input": {
+        "accessList": [],
+        "calls": [
+          {
+            "input": "0xa9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100",
+            "to": "0x20c0000000000000000000000000000000000010",
+            "value": "0x0"
+          }
+        ],
+        "chainId": 7777,
+        "feePayerSignature": null,
+        "feeToken": null,
+        "gas": "0x186a0",
+        "keyAuthorization": null,
+        "magnusAuthorizationList": [
+          {
+            "address": "0x000000000000000000000000000000000000ca11",
+            "chainId": "0x1e61",
+            "nonce": "0x7",
+            "signature": "0x27089d2f45561578c0099d768b4ca736c3b65cc39541763cb74e952ce4b20c8308caff0eac1042c4d5ac2308a6997604c0425b177f06b8869504e3e9bda93ac21c"
+          }
+        ],
+        "maxFeePerGas": "0x9502f9000",
+        "maxPriorityFeePerGas": "0x3b9aca00",
+        "nonce": "0x5",
+        "nonceKey": "0x0",
+        "validAfter": null,
+        "validBefore": null
+      },
+      "wire_hex": "0x76f9011c821e61843b9aca008509502f9000830186a0f85ef85c9420c000000000000000000000000000000000001080b844a9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100c0800580808080f85ef85c821e6194000000000000000000000000000000000000ca1107b84127089d2f45561578c0099d768b4ca736c3b65cc39541763cb74e952ce4b20c8308caff0eac1042c4d5ac2308a6997604c0425b177f06b8869504e3e9bda93ac21cb841b2c8eec74ae1f7714a42c930a4b0384b5f2cbbd44a507118555184cb34de32c50bb331b952401237cf3b0c3dad790233469a8240003e7237b8707b072002d3521b"
+    },
+    {
+      "description": "mUSD transfer that provisions a P256 access key via key_authorization.",
+      "name": "key_authorization_p256",
+      "signature_bytes": "0x1e7673e37060c27445a1c3d49a6d67d18cd5cb3c09e368fc92f87a557a65759b53a3d5f3bb6f513b5874767cff0f47e0554b0b8cfbc10a2263f0b99e277f5f211b",
+      "signature_hash": "0xa9c025e9f1effb536d49507caa3fc3c0adf4181ba0e87b231c61041403efd8c2",
+      "signing_hex": "0x76f8d9821e61843b9aca008509502f9000830186a0f85ef85c9420c000000000000000000000000000000000001080b844a9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100c0800680808080c0f85dd9821e610194000000000000000000000000000000000000d00db8413adc74518eaa8bec67f2fcc90eb00e353b1a67dfd1ab0ae2fee1ee1db647609f1f641d4247ddfa6a0ee60b4e0f707b1a7a95f1cbd25a029f3668604b3d8711731c",
+      "tx_hash": "0x29e625d80d1618f9c43b062a7f44f4eea0f914a04cdb1a4c4032f2962e1b1f2e",
+      "tx_input": {
+        "accessList": [],
+        "calls": [
+          {
+            "input": "0xa9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100",
+            "to": "0x20c0000000000000000000000000000000000010",
+            "value": "0x0"
+          }
+        ],
+        "chainId": 7777,
+        "feePayerSignature": null,
+        "feeToken": null,
+        "gas": "0x186a0",
+        "keyAuthorization": {
+          "encoded": "0xf85dd9821e610194000000000000000000000000000000000000d00db8413adc74518eaa8bec67f2fcc90eb00e353b1a67dfd1ab0ae2fee1ee1db647609f1f641d4247ddfa6a0ee60b4e0f707b1a7a95f1cbd25a029f3668604b3d8711731c"
+        },
+        "magnusAuthorizationList": [],
+        "maxFeePerGas": "0x9502f9000",
+        "maxPriorityFeePerGas": "0x3b9aca00",
+        "nonce": "0x6",
+        "nonceKey": "0x0",
+        "validAfter": null,
+        "validBefore": null
+      },
+      "wire_hex": "0x76f9011c821e61843b9aca008509502f9000830186a0f85ef85c9420c000000000000000000000000000000000001080b844a9059cbb000000000000000000000000000000000000000000000000000000000000beef0000000000000000000000000000000000000000000000000000000005f5e100c0800680808080c0f85dd9821e610194000000000000000000000000000000000000d00db8413adc74518eaa8bec67f2fcc90eb00e353b1a67dfd1ab0ae2fee1ee1db647609f1f641d4247ddfa6a0ee60b4e0f707b1a7a95f1cbd25a029f3668604b3d8711731cb8411e7673e37060c27445a1c3d49a6d67d18cd5cb3c09e368fc92f87a557a65759b53a3d5f3bb6f513b5874767cff0f47e0554b0b8cfbc10a2263f0b99e277f5f211b"
     }
   ],
   "magnusTxTypeByte": "0x76",
