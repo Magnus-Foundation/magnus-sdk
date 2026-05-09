@@ -390,7 +390,9 @@ Defer to v0.2.0:
 - ~~`fee-payer-signing` hash variant~~ — shipped in 0.1 via
   `getMagnusFeePayerSignatureHash(tx, sender)` and
   `serializeMagnusTransaction(..., { purpose: 'fee-payer-signing', sender })`.
-- Sub-path exports for tree-shaking
+- ~~Sub-path exports for tree-shaking~~ — shipped in 0.1: `@magnus/sdk/chain`,
+  `/transaction`, `/precompiles`, `/rpc`, `/utils`. Root `@magnus/sdk` still
+  re-exports everything for ergonomic single-import use.
 - Additional locales beyond SEA
 - WebAuthn + Keychain signature constructors (only verifiers in v0.1)
 

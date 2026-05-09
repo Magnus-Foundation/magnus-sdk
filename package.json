@@ -1,6 +1,6 @@
 {
   "name": "@magnus/sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "JavaScript SDK for Magnus — chain definitions, type 0x76 transaction serializer, custom RPC actions, precompile ABIs, and locale-aware formatting",
   "license": "Apache-2.0",
   "type": "module",
@@ -12,6 +12,31 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./chain": {
+      "types": "./dist/chain/index.d.ts",
+      "import": "./dist/chain/index.js",
+      "require": "./dist/chain/index.cjs"
+    },
+    "./transaction": {
+      "types": "./dist/transaction/index.d.ts",
+      "import": "./dist/transaction/index.js",
+      "require": "./dist/transaction/index.cjs"
+    },
+    "./precompiles": {
+      "types": "./dist/precompiles/index.d.ts",
+      "import": "./dist/precompiles/index.js",
+      "require": "./dist/precompiles/index.cjs"
+    },
+    "./rpc": {
+      "types": "./dist/rpc/index.d.ts",
+      "import": "./dist/rpc/index.js",
+      "require": "./dist/rpc/index.cjs"
+    },
+    "./utils": {
+      "types": "./dist/utils/index.d.ts",
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs"
     }
   },
   "files": [
