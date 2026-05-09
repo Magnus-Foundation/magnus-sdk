@@ -1,0 +1,437 @@
+# `@magnus/sdk` — Design
+
+The JavaScript SDK for Magnus. Chain definitions, type-`0x76` transaction
+serializer, custom RPC actions, precompile ABIs, and locale-aware formatting.
+
+> Authoritative reference for the package. Supersedes the parts of
+> `magnus/docs/wallet/magnus-viem-tech-spec.md` that conflict with the Rust
+> source (incorrect tx type byte and wire shape).
+
+---
+
+## 1. Goals
+
+The SDK is the single dependency anything written in JavaScript needs in order
+to talk to Magnus correctly.
+
+| In scope | Out of scope (lives elsewhere) |
+|---|---|
+| Chain definitions for viem | Wallet UI, key management, signing UX |
+| Type-`0x76` transaction serializer + parser | Balance caching, on-device storage |
+| `magnus_*` JSON-RPC method bindings | Push notifications, WalletConnect session UI |
+| Precompile ABIs (FeeManager, MIP-20) | React hooks (future `@magnus/react`) |
+| Currency / locale formatting helpers | Native iOS/Android Swift/Kotlin (RN consumes JS) |
+| Hash helpers (signature hash, tx hash) | Forking viem (we extend, never fork) |
+
+The SDK has **no UI**, **no React**, **no state**. It is a pure functional
+library: input bytes → output bytes, input RPC call → typed response.
+
+## 2. Consumers
+
+| Consumer | What they use | Why they need the SDK |
+|---|---|---|
+| Magnus Wallet (mobile + extension) | All of it | Builds and submits user transactions |
+| Third-party wallets (Rabby, hardware, MetaMask Snap) | Chain def + serializer | Add Magnus support without forking their codebase |
+| dApps (merchants, banking integrations, payment platforms) | Chain def + RPC actions + ABIs + formatters | Read FX rates, build payment requests, format balances |
+
+## 3. Non-goals
+
+- **Wagmi React hooks** — ship later as a separate `@magnus/react` package once
+  the SDK API stabilises. Bundling them now bloats the SDK with React deps for
+  every dApp that uses plain viem.
+- **Native bindings** — React Native consumes the JS package directly. If/when
+  a Swift/Kotlin app needs native-only bindings, they ship as separate packages
+  (`magnus-swift`, `magnus-kotlin`) — not as part of this SDK.
+- **Chain forks of viem** — viem already exposes `defineChain({ serializers })`
+  and `client.extend()`. Forking would mean perpetual rebase pain and would
+  block third-party dApps from using their existing viem install.
+
+## 4. Public API surface
+
+All exports live behind a single entry point. Sub-path exports are added in
+v0.2 if tree-shaking proves insufficient.
+
+```ts
+import {
+  // Chain definitions
+  magnus, magnusTestnet, magnusDevnet,
+
+  // Transaction
+  serializeMagnusTransaction,
+  parseMagnusTransaction,
+  getMagnusSignatureHash,
+  getMagnusTransactionHash,
+  type MagnusTransaction,
+  type MagnusTransactionSerializable,
+  type MagnusSignedTransaction,
+  type Call,
+
+  // RPC actions
+  magnusActions,
+
+  // Precompile addresses + ABIs
+  feeManagerAbi,
+  mip20Abi,
+  MIP_FEE_MANAGER_ADDRESS,
+  MAGNUS_USD_ADDRESS,
+  MAGNUS_VND_ADDRESS,
+  MAGNUS_EUR_ADDRESS,
+
+  // Formatting
+  formatBalance,
+  formatFee,
+  parseAmount,
+  convertCurrency,
+
+  // Constants
+  MAGNUS_TX_TYPE,           // 0x76
+  MAGNUS_NATIVE_DECIMALS,   // 6
+} from '@magnus/sdk'
+```
+
+## 5. Module layout
+
+```
+src/
+├── index.ts                 # public re-exports only — no logic
+├── chain.ts                 # defineChain(magnus, magnusTestnet, magnusDevnet)
+├── constants.ts             # tx type byte, decimals, addresses
+├── transaction/
+│   ├── types.ts             # MagnusTransaction, Call, signature variants
+│   ├── serialize.ts         # type-0x76 RLP encoder
+│   ├── parse.ts             # decoder (round-trips serialize)
+│   ├── hash.ts              # signature_hash + tx_hash
+│   └── signature.ts         # MagnusSignature byte format (4 variants)
+├── precompiles/
+│   ├── addresses.ts         # canonical addresses
+│   ├── feeManager.ts        # ABI + typed helpers
+│   └── mip20.ts             # MIP-20 token ABI
+├── rpc/
+│   ├── actions.ts           # magnusActions() — viem extension
+│   └── methods.ts           # JSON-RPC method type definitions
+└── utils/
+    ├── currency.ts          # convertCurrency, locale tables
+    └── format.ts            # formatBalance, formatFee, parseAmount
+
+tests/
+├── chain.test.ts            # chain ID + RPC URL smoke tests
+├── transaction/
+│   ├── serialize.test.ts    # golden vector assertions (Rust-derived)
+│   ├── parse.test.ts        # round-trips
+│   └── hash.test.ts         # known signature/tx hash pairs
+├── rpc/
+│   └── actions.test.ts      # mocked transport, asserts JSON-RPC payloads
+├── format.test.ts           # locale formatting matrix
+└── golden/
+    └── vectors.json         # generated by Rust example binary
+```
+
+## 6. Type-`0x76` transaction wire format
+
+Authoritative source: `crates/primitives/primitives/src/transaction/magnus_transaction.rs`
+in the Magnus monorepo.
+
+### 6.1 Field order (the `MagnusTransaction` body)
+
+```
+1.  chain_id                       u64
+2.  max_priority_fee_per_gas       u128
+3.  max_fee_per_gas                u128
+4.  gas_limit                      u64
+5.  calls                          List<Call>           # see 6.2
+6.  access_list                    List<AccessTuple>    # EIP-2930 shape
+7.  nonce_key                      U256                 # 0 = protocol nonce
+8.  nonce                          u64
+9.  valid_before                   u64 | 0x80           # NonZeroU64 or empty
+10. valid_after                    u64 | 0x80
+11. fee_token                      Address | 0x80       # MIP-20 token addr or empty
+12. fee_payer_signature            sig-list | 0x80
+13. magnus_authorization_list      List<MagnusAuthorization>
+14. key_authorization              SignedKeyAuthorization (OMITTED if absent)
+```
+
+**`Call`** (field 5 element):
+```
+{ to: Address | empty (CREATE), value: U256, input: Bytes }
+```
+
+### 6.2 Three encodings
+
+The same field set produces three different byte streams depending on context.
+The serializer takes a `purpose` parameter to pick the right one.
+
+| Purpose | Wraps with type byte? | `fee_token` included? | `fee_payer_signature` shape | Use |
+|---|---|---|---|---|
+| `signing` (sender signs this) | ✅ `0x76 ‖ rlp([...])` | only if no fee payer | `0x00` placeholder if Some, `0x80` if None | Compute `signature_hash` for signing |
+| `fee-payer-signing` (sponsor signs this) | ❌ raw — magic byte `0x78 ‖ rlp([..., sender])` | always | sender address replaces signature slot | Compute fee-payer hash for sponsorship |
+| `tx-on-wire` (broadcast) | ✅ `0x76 ‖ rlp([..., sig_bytes])` | yes | full sig bytes RLP-string | Submit via `eth_sendRawTransaction` |
+
+The asymmetric "sender skips fee_token when fee payer present" prevents the
+sender from committing to a specific gas token; the fee payer chooses it.
+
+### 6.3 Signature byte format (`MagnusSignature`)
+
+A length-prefixed byte string with a discriminator:
+
+| Type | First byte | Total length | Layout |
+|---|---|---|---|
+| `Secp256k1` | (none — bare 65 bytes) | 65 | `r ‖ s ‖ v` |
+| `P256` | `0x01` | 130 | `0x01 ‖ pubkey_x[32] ‖ pubkey_y[32] ‖ r[32] ‖ s[32] ‖ recovery_id[1]` |
+| `WebAuthn` | `0x02` | ≤ 2048 | `0x02 ‖ rlp([authenticator_data, client_data_json, r, s])` |
+| `Keychain` | `0x03` | varies | `0x03 ‖ rlp([key_id, signed_payload])` |
+
+Detection at parse time: peek byte 0; if it's a known discriminator, dispatch;
+otherwise (and length is 65) treat as Secp256k1.
+
+### 6.4 Tx hash vs signature hash
+
+```ts
+signature_hash = keccak256(0x76 ‖ rlp(fields_for_signing))
+                                         ↑ skip_fee_token = (fee_payer_signature !== undefined)
+                                         ↑ fee_payer_signature slot uses placeholder
+
+fee_payer_hash  = keccak256(0x78 ‖ rlp([...fields_with_fee_token, ..., sender]))
+
+tx_hash         = keccak256(0x76 ‖ rlp([...fields, signature_bytes]))
+```
+
+The wallet signs `signature_hash` to authorize a tx; a sponsor (if any) signs
+`fee_payer_hash`; the network identifies the broadcast tx by `tx_hash`.
+
+## 7. Chain definitions
+
+| Chain | ID | RPC | Explorer |
+|---|---|---|---|
+| `magnus` (mainnet) | 7777 | TBD (`https://rpc.magnus.example/`) | TBD |
+| `magnusTestnet` | 7776 | TBD (`https://rpc.testnet.magnus.example/`) | TBD |
+| `magnusDevnet` (Staccato) | 73730 | `http://rpc.staccato.magnuschain.xyz:8545` | `https://devnet.magnuschain.xyz` |
+
+`nativeCurrency = { name: 'MagnusUSD', symbol: 'mUSD', decimals: 6 }` for all.
+
+The serializer is wired in via `defineChain({ serializers: { transaction: serializeMagnusTransaction } })`,
+so any viem `walletClient.sendTransaction({ chain: magnus, ... })` automatically
+produces a valid type-`0x76` payload — no caller changes required.
+
+## 8. Custom RPC actions (`magnusActions`)
+
+Extends a viem `Client` with typed access to Magnus-specific JSON-RPC methods.
+
+```ts
+const client = createPublicClient({ chain: magnus, transport: http() })
+                 .extend(magnusActions())
+
+await client.getFxRate('VND')
+// → { numerator: 24_000_000_000_000n, denominator: 1_000_000_000n, ok: true }
+
+await client.getActiveFxRates()
+// → [{ currency: 'USD', ... }, { currency: 'VND', ... }]
+
+await client.getAcceptedFeeTokens(validatorAddress)
+// → { validator: 0x..., tokens: [0x..., 0x...] }
+```
+
+Underlying methods (matching the Rust RPC):
+
+| TS method | JSON-RPC method | Purpose |
+|---|---|---|
+| `getFxRate(currency)` | `magnus_fxRate` | Median oracle price for one currency |
+| `getActiveFxRates()` | `magnus_activeFxRates` | All currencies with valid medians |
+| `getAcceptedFeeTokens(validator)` | `magnus_acceptedFeeTokens` | Tokens a given validator's accept-set covers |
+
+If the underlying node returns `magnus_*` methods that the SDK doesn't yet
+wrap, the user can still hit them via `client.request({ method, params })`.
+
+## 9. Precompile ABIs
+
+Ships canonical addresses and Solidity ABIs for the two precompiles dApps
+interact with directly:
+
+- `FeeManager` (`0x000000000000000000000000000000000000FE...` — exact addr from chainspec):
+  `medianFxRate(string)`, `setUserToken(address)`, `validatorAcceptSet(address)`, etc.
+- `MIP-20` token (one ABI applied to all stable addresses):
+  `MAGNUS_USD_ADDRESS`, `MAGNUS_VND_ADDRESS`, `MAGNUS_EUR_ADDRESS`.
+
+Addresses are pulled from `magnus-contracts` Rust crate. The SDK ships them as
+typed constants so dApps don't hand-encode.
+
+## 10. Locale + currency formatting
+
+Mobile wallet, extension, and dApps must format the same number identically.
+Centralising the logic in the SDK means there's one place to fix a Vietnamese
+spacing bug.
+
+```ts
+formatBalance(1_234_567n, 'mVND', { locale: 'vi-VN' })  // "₫1.234.567"
+formatBalance(1_000_000n, 'mUSD', { locale: 'en-US' })  // "$1.00"
+formatBalance(1_000_000n, 'mEUR', { locale: 'en-US' })  // "€1.00"
+formatFee(230n, 'mVND', { locale: 'vi-VN' })            // "230 ₫"
+
+parseAmount('1.234,56', { locale: 'de-DE', decimals: 6 }) // 1_234_560_000n
+parseAmount('1,000.50', { locale: 'en-US', decimals: 6 }) // 1_000_500_000n
+
+convertCurrency({
+  amount: 100_000_000n,           // 100 mUSD
+  from: 'USD',
+  to: 'VND',
+  rate: { numerator: 24_000n, denominator: 1n },
+})
+// → 2_400_000_000_000n  (2,400,000 mVND, 6 dp)
+```
+
+| Locale | Thousand sep | Decimal sep | Symbol position |
+|---|---|---|---|
+| `vi-VN` | `.` | `,` | suffix: `1.000₫` |
+| `id-ID` | `.` | `,` | prefix: `Rp1.000` |
+| `tl-PH` | `,` | `.` | prefix: `₱1,000.00` |
+| `th-TH` | `,` | `.` | prefix: `฿1,000.00` |
+| `en-US` | `,` | `.` | prefix: `$1,000.00` |
+| `de-DE` | `.` | `,` | suffix: `1.000,00 €` |
+
+Detection: `Intl.NumberFormat` for the heavy lifting; the SDK supplies the
+currency-symbol table because Intl doesn't know about `mVND`/`mUSD` codes.
+
+## 11. Test strategy
+
+### 11.1 Three test categories
+
+| Category | Source of truth | Where it lives |
+|---|---|---|
+| **Golden vectors** — every transaction encoding shape | Rust `magnus-primitives` test suite | `tests/golden/vectors.json` |
+| **Round-trip** — parse(serialize(x)) === x | Self-consistency | `tests/transaction/parse.test.ts` |
+| **Behaviour** — chain config, formatters, RPC actions | TypeScript-only | `tests/chain.test.ts`, `tests/format.test.ts`, `tests/rpc/actions.test.ts` |
+
+### 11.2 Golden vector regeneration
+
+A Rust example binary in `magnus/crates/primitives/primitives/examples/dump_golden.rs`
+emits a JSON file:
+
+```bash
+cd ~/projects/rust/magnus
+cargo run -p magnus-primitives --example dump_golden \
+  -- --out ~/projects/magnus/magnus-sdk/tests/golden/vectors.json
+```
+
+Each entry:
+
+```jsonc
+{
+  "name": "basic_musd_transfer_no_fee_token",
+  "tx_input": { /* MagnusTransaction fields as JSON */ },
+  "signing_hex":   "0x76f8...",  // bytes signed by sender
+  "signature_hash": "0xabc...",  // keccak256 of signing_hex
+  "wire_hex":      "0x76f8...",  // bytes broadcast to network
+  "tx_hash":       "0xdef..."    // keccak256 of wire_hex
+}
+```
+
+The TS test reconstructs the input, runs `serializeMagnusTransaction`, and
+asserts byte-equality with `wire_hex` (and `signing_hex` for the signing
+variant). Any divergence between the Rust and TS encoders fails CI.
+
+Coverage matrix (fixtures shipped in v0.1.0):
+
+1. Basic mUSD transfer, no fee_token, no fee_payer
+2. mUSD transfer with `fee_token = mVND`
+3. mUSD transfer with `valid_before` set
+4. mUSD transfer with `valid_after` + `valid_before`
+5. Sponsored tx with `fee_payer_signature`
+6. Tx with `magnus_authorization_list` (one auth)
+7. Tx with `key_authorization` (provisioning a P256 key)
+8. Multi-call tx (3 calls)
+9. CREATE call (first call only)
+10. Each signature type: Secp256k1, P256, WebAuthn, Keychain
+
+### 11.3 What we explicitly don't test in the SDK
+
+- That the network accepts the tx (that's the protocol's responsibility — Rust
+  test suite covers it)
+- That gas estimation is accurate (live RPC concern)
+- That balances are correct (state concern, lives in the wallet)
+
+## 12. Versioning + release
+
+| Aspect | Choice |
+|---|---|
+| License | Apache-2.0 (matches the chain repo) |
+| Versioning | Semver. Pre-1.0 versions can break minor — wallet pins exact `0.1.x` |
+| Peer dependencies | `viem ^2.20.0`. Bumped on minor when Magnus needs new viem features |
+| Distribution | npm public, scoped `@magnus/`. Need to claim the npm scope |
+| Bundles | ESM + CJS via tsup. ESM-first; CJS preserved for Node tooling |
+| Tree-shaking | Sub-path exports added in v0.2 if v0.1 bundle size is a problem |
+| Source maps | Always shipped |
+| Minimum Node | 18 LTS (matches React Native and modern wallets) |
+
+### 12.1 Compatibility commitment
+
+The SDK pins itself to a **chain protocol version**. If Magnus changes the
+type-`0x76` wire format, the SDK ships a major version. Old wallets running
+the old SDK will keep working until the chain hard-forks.
+
+Each SDK release publishes a `magnusProtocolVersion` constant so a wallet can
+log a warning if it's running an SDK that's older than the chain's current
+protocol.
+
+## 13. v0.1.0 scope (the minimum that unblocks the wallet)
+
+Must ship:
+
+- [x] `chain.ts` (mainnet, testnet, devnet)
+- [ ] `serialize.ts` for tx purposes: `signing`, `tx-on-wire`
+- [ ] `parse.ts` (round-trip)
+- [ ] `signature_hash` + `tx_hash` helpers
+- [ ] Golden vectors for fixtures 1–7 from §11.2
+- [ ] `magnusActions()` covering `magnus_fxRate` + `magnus_activeFxRates`
+- [ ] Precompile addresses + minimal ABIs (`feeManagerAbi`, `mip20Abi`)
+- [ ] `formatBalance`, `formatFee`, `parseAmount` for SEA locales
+- [ ] README with three usage examples (basic transfer, fee_token, FX read)
+
+Defer to v0.2.0:
+
+- `fee-payer-signing` hash variant (sponsorship UX) — wallet doesn't surface
+  sponsorship in MVP
+- Sub-path exports for tree-shaking
+- Additional locales beyond SEA
+- WebAuthn + Keychain signature constructors (only verifiers in v0.1)
+
+## 14. Open decisions
+
+1. **npm scope ownership** — claim `@magnus/` on npm. If unavailable, fall back
+   to `@magnus-network/` (consistent with `magnusnetwork.xyz`-style domains).
+2. **Mainnet/testnet RPC URLs** — chainspec config still uses `magnus.example`
+   placeholders. SDK ships those as defaults; consumers override via `transport`.
+3. **Repo location for SDK** — currently `~/projects/magnus/magnus-sdk/` as a
+   standalone git repo. Could move under `magnus-foundation/` GitHub org once
+   that's set up.
+4. **`magnusProtocolVersion` source** — hardcoded constant updated per release,
+   or read from chain via an RPC call? Hardcoded is simpler for v0.1.
+5. **Whether to publish before app store launch** — publishing early lets
+   third-party wallets start integrating; risk is locking the API too soon.
+   Recommendation: tag `0.1.0-rc.1` for internal use, `0.1.0` after first
+   wallet is live on TestFlight + Play Internal.
+
+## 15. Implementation order
+
+```
+Step 1   Generate golden vectors from Rust example binary       (~0.5 day)
+Step 2   serialize.ts — minimal: signing + tx-on-wire purposes  (~2 days)
+Step 3   parse.ts + round-trip tests                            (~1 day)
+Step 4   signature_hash + tx_hash                               (~0.5 day)
+Step 5   Cover all golden fixtures (fee_token, valid_*, AA)     (~1 day)
+Step 6   magnusActions() + RPC method types                     (~0.5 day)
+Step 7   Precompile ABIs + addresses                            (~0.5 day)
+Step 8   Currency formatting + SEA locales                      (~1 day)
+Step 9   README + usage examples + first publish to npm         (~0.5 day)
+```
+
+**~7-8 days for one engineer.** Everything else (mobile shell, extension,
+dApp examples) consumes this package.
+
+## 16. Out-of-band coordination
+
+- **Rust monorepo PR**: add `examples/dump_golden.rs` to `magnus-primitives` so
+  golden vectors regenerate on demand. Keeps the encoding oracle in one place.
+- **Chainspec ID**: confirm mainnet `7777`, testnet `7776`, devnet `73730` are
+  final before v0.1.0 (they're in `config/fx-reporter/*.toml` today).
+- **Stable HTTPS RPC for devnet**: iOS App Transport Security blocks plain HTTP
+  in release builds; the wallet team needs `https://rpc.devnet.magnuschain.xyz`
+  before TestFlight.
