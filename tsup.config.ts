@@ -15,4 +15,9 @@ export default defineConfig({
   sourcemap: true,
   splitting: false,
   outDir: 'dist',
+  // Force the ESM build to use .mjs and CJS to use .cjs. Without this, tsup
+  // would emit .js for one of them — and consumers that don't set
+  // "type": "module" (like wallet-stack under TS Node16 resolution) would
+  // mis-classify our package's interop. Explicit extensions = no ambiguity.
+  outExtension: ({ format }) => ({ js: format === 'esm' ? '.mjs' : '.cjs' }),
 })

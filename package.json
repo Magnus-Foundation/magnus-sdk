@@ -3,39 +3,38 @@
   "version": "0.1.1",
   "description": "JavaScript SDK for Magnus — chain definitions, type 0x76 transaction serializer, custom RPC actions, precompile ABIs, and locale-aware formatting",
   "license": "Apache-2.0",
-  "type": "module",
   "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
+  "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
+      "import": "./dist/index.mjs",
       "require": "./dist/index.cjs"
     },
     "./chain": {
       "types": "./dist/chain/index.d.ts",
-      "import": "./dist/chain/index.js",
+      "import": "./dist/chain/index.mjs",
       "require": "./dist/chain/index.cjs"
     },
     "./transaction": {
       "types": "./dist/transaction/index.d.ts",
-      "import": "./dist/transaction/index.js",
+      "import": "./dist/transaction/index.mjs",
       "require": "./dist/transaction/index.cjs"
     },
     "./precompiles": {
       "types": "./dist/precompiles/index.d.ts",
-      "import": "./dist/precompiles/index.js",
+      "import": "./dist/precompiles/index.mjs",
       "require": "./dist/precompiles/index.cjs"
     },
     "./rpc": {
       "types": "./dist/rpc/index.d.ts",
-      "import": "./dist/rpc/index.js",
+      "import": "./dist/rpc/index.mjs",
       "require": "./dist/rpc/index.cjs"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
-      "import": "./dist/utils/index.js",
+      "import": "./dist/utils/index.mjs",
       "require": "./dist/utils/index.cjs"
     }
   },
