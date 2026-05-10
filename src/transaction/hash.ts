@@ -1,4 +1,6 @@
-import { type Address, type Hex, keccak256 } from 'viem'
+import { keccak256 } from 'viem'
+
+import type { Address, Hex } from '../types-prim.js'
 
 import {
   type MagnusSignedTransaction,

@@ -1,4 +1,6 @@
-import { type Hex, bytesToHex, hexToBytes } from 'viem'
+import { bytesToHex, hexToBytes } from 'viem'
+
+import type { Hex } from '../types-prim.js'
 
 import {
   MAX_WEBAUTHN_SIGNATURE_LENGTH,

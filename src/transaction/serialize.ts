@@ -1,14 +1,7 @@
-import {
-  type Address,
-  type Hex,
-  bytesToHex,
-  concatHex,
-  hexToBytes,
-  toHex,
-  toRlp,
-} from 'viem'
+import { bytesToHex, concatHex, hexToBytes, toHex, toRlp } from 'viem'
 
 import { FEE_PAYER_SIGNATURE_MAGIC_BYTE, MAGNUS_TX_TYPE } from '../constants.js'
+import type { Address, Hex } from '../types-prim.js'
 import type {
   AccessListEntry,
   Call,

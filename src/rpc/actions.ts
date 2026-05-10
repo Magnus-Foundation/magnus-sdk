@@ -1,5 +1,9 @@
-import type { Address, Client, Transport } from 'viem'
-
+// Note: Client and Transport come from viem at runtime, but importing their
+// types here would force downstream tsc to follow into viem's modern d.ts
+// (which TS 4.8.4 — used by SubWallet — cannot parse). We keep the public
+// signature minimal and let viem's structural typing handle the join at the
+// call site.
+import type { Address } from '../types-prim.js'
 import {
   type AcceptedFeeTokens,
   type FxRateInfo,
@@ -7,6 +11,13 @@ import {
   MAGNUS_RPC_METHODS,
   decodeFxRateInfo,
 } from './methods.js'
+
+// viem's Client.request has a narrow literal-typed `method` constraint that
+// can't accept arbitrary `magnus_*` methods at the type level. We accept the
+// client as `unknown` and cast to our broader shape internally — the runtime
+// behavior is identical (both ultimately call the same EIP-1193 transport).
+type LooseRequestFn = (args: { method: string; params?: readonly unknown[] }) => Promise<unknown>
+type LooseClient = { request: LooseRequestFn }
 
 export type MagnusActions = {
   /** Returns the median FX rate for `currency` (e.g. "USD", "VND", "EUR"). */
@@ -34,51 +45,39 @@ export type MagnusActions = {
  * ```
  */
 export function magnusActions() {
-  return <TTransport extends Transport>(client: Client<TTransport>): MagnusActions => ({
+  return (rawClient: unknown): MagnusActions => {
+    const client = rawClient as LooseClient
+
+    return {
     async getFxRate(currency) {
-      const wire = await client.request<{
-        method: typeof MAGNUS_RPC_METHODS.fxRate
-        Parameters: [string]
-        ReturnType: FxRateInfoWire
-      }>({
+      const wire = (await client.request({
         method: MAGNUS_RPC_METHODS.fxRate,
         params: [currency],
-      })
+      })) as FxRateInfoWire
       return decodeFxRateInfo(wire)
     },
 
     async getActiveFxRates() {
-      const wire = await client.request<{
-        method: typeof MAGNUS_RPC_METHODS.activeFxRates
-        Parameters: []
-        ReturnType: FxRateInfoWire[]
-      }>({
+      const wire = (await client.request({
         method: MAGNUS_RPC_METHODS.activeFxRates,
         params: [],
-      })
+      })) as FxRateInfoWire[]
       return wire.map(decodeFxRateInfo)
     },
 
     async getAcceptedFeeTokens(validator) {
-      return await client.request<{
-        method: typeof MAGNUS_RPC_METHODS.acceptedFeeTokens
-        Parameters: [Address]
-        ReturnType: AcceptedFeeTokens
-      }>({
+      return (await client.request({
         method: MAGNUS_RPC_METHODS.acceptedFeeTokens,
         params: [validator],
-      })
+      })) as AcceptedFeeTokens
     },
 
-    async isFeeTokenAccepted(validator, feeToken) {
-      return await client.request<{
-        method: typeof MAGNUS_RPC_METHODS.isFeeTokenAccepted
-        Parameters: [Address, Address]
-        ReturnType: boolean
-      }>({
-        method: MAGNUS_RPC_METHODS.isFeeTokenAccepted,
-        params: [validator, feeToken],
-      })
-    },
-  })
+      async isFeeTokenAccepted(validator, feeToken) {
+        return (await client.request({
+          method: MAGNUS_RPC_METHODS.isFeeTokenAccepted,
+          params: [validator, feeToken],
+        })) as boolean
+      }
+    }
+  }
 }

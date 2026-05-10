@@ -1,4 +1,6 @@
-import { type Hex, fromRlp, hexToBytes, toHex, toRlp } from 'viem'
+import { fromRlp, hexToBytes, toHex, toRlp } from 'viem'
+
+import type { Hex } from '../types-prim.js'
 
 import { MAGNUS_TX_TYPE } from '../constants.js'
 import type {

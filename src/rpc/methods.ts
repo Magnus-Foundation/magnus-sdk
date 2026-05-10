@@ -1,4 +1,4 @@
-import type { Address } from 'viem'
+import type { Address } from '../types-prim.js'
 
 /**
  * JSON-RPC method names + I/O types for Magnus-specific endpoints.

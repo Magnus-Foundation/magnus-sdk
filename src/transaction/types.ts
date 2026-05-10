@@ -1,4 +1,4 @@
-import type { Address, Hex } from 'viem'
+import type { Address, Hex } from '../types-prim.js'
 
 /**
  * One sub-call inside a MagnusTransaction. The first call may be a CREATE
