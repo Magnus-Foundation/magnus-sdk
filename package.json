@@ -45,7 +45,6 @@
   ],
   "scripts": {
     "build": "tsup",
-    "prepare": "tsup || true",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc --noEmit",
