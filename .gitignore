@@ -1,5 +1,6 @@
 node_modules
-dist
+# dist/ is committed so consumers can install from a git URL without running the build
+# (e.g. github:Magnus-Foundation/magnus-sdk#<sha> in package.json)
 *.tsbuildinfo
 .turbo
 coverage
