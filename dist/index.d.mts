@@ -1,9 +1,10 @@
 export { magnus, magnusDevnet, magnusTestnet } from './chain/index.mjs';
 export { AccessListEntry, Call, DecodedMagnusSignature, KeyAuthorization, KeychainMagnusSignature, MagnusAuthorization, MagnusSignatureBytes, MagnusSignedTransaction, MagnusTransaction, MagnusTransactionSerializable, P256MagnusSignature, PrimitiveMagnusSignature, Secp256k1MagnusSignature, Secp256k1Signature, SerializeMagnusOptions, SerializeMagnusPurpose, WebAuthnMagnusSignature, encodeMagnusSignature, getMagnusFeePayerSignatureHash, getMagnusSignatureHash, getMagnusTransactionHash, parseMagnusSignature, parseMagnusTransaction, serializeMagnusTransaction } from './transaction/index.mjs';
 export { ACCOUNT_KEYCHAIN_ADDRESS, ADDRESS_REGISTRY_ADDRESS, CROSS_FX_PSM_ADDRESS, MAGNUS_USD_ADDRESS, MIP20_FACTORY_ADDRESS, MIP20_ISSUER_REGISTRY_ADDRESS, MIP403_REGISTRY_ADDRESS, MIP_FEE_MANAGER_ADDRESS, NONCE_PRECOMPILE_ADDRESS, SIGNATURE_VERIFIER_ADDRESS, STABLECOIN_DEX_ADDRESS, VALIDATOR_CONFIG_ADDRESS, VALIDATOR_CONFIG_V2_ADDRESS, crossFxPSMAbi, feeManagerAbi, mip20Abi } from './precompiles/index.mjs';
-export { AcceptedFeeTokens, AcceptedFeeTokensWire, FxRateInfo, FxRateInfoWire, MAGNUS_RPC_METHODS, MagnusActions, decodeFxRateInfo, magnusActions } from './rpc/index.mjs';
+export { AcceptedFeeTokens, AcceptedFeeTokensWire, FxRateInfo, FxRateInfoWire, MAGNUS_RPC_METHODS, MagnusActions, decodeFxRateInfo, feeTokenHttp, magnusActions } from './rpc/index.mjs';
 export { ConvertCurrencyArgs, FormatBalanceOptions, FxRateLike, ParseAmountOptions, SupportedCurrency, SupportedLocale, convertCurrency, formatBalance, formatFee, parseAmount } from './utils/index.mjs';
 import './types-prim-BlJ081zG.mjs';
+import 'viem';
 
 /** EIP-2718 type byte for Magnus transactions. */
 declare const MAGNUS_TX_TYPE: 118;

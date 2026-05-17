@@ -51,6 +51,7 @@ __export(src_exports, {
   decodeFxRateInfo: () => decodeFxRateInfo,
   encodeMagnusSignature: () => encodeMagnusSignature,
   feeManagerAbi: () => feeManagerAbi,
+  feeTokenHttp: () => feeTokenHttp,
   formatBalance: () => formatBalance,
   formatFee: () => formatFee,
   getMagnusFeePayerSignatureHash: () => getMagnusFeePayerSignatureHash,
@@ -1079,6 +1080,29 @@ function magnusActions() {
   };
 }
 
+// src/rpc/feeTokenTransport.ts
+var import_viem6 = require("viem");
+function feeTokenHttp(url, feeToken, config = {}) {
+  const inner = (0, import_viem6.http)(url, config);
+  const transport = ((opts) => {
+    const t = inner(opts);
+    const originalRequest = t.request.bind(t);
+    return {
+      ...t,
+      request: async (args) => {
+        if ((args.method === "eth_call" || args.method === "eth_estimateGas") && Array.isArray(args.params) && args.params.length > 0 && typeof args.params[0] === "object" && args.params[0] !== null && // Don't overwrite an explicitly-set feeToken.
+        !("feeToken" in args.params[0])) {
+          const patched = [...args.params];
+          patched[0] = { ...args.params[0], feeToken };
+          return originalRequest({ ...args, params: patched });
+        }
+        return originalRequest(args);
+      }
+    };
+  });
+  return transport;
+}
+
 // src/utils/currency.ts
 function divRound(num, den, mode) {
   if (den === 0n) throw new Error("currency: division by zero");
@@ -1241,6 +1265,7 @@ function parseAmount(input, options) {
   decodeFxRateInfo,
   encodeMagnusSignature,
   feeManagerAbi,
+  feeTokenHttp,
   formatBalance,
   formatFee,
   getMagnusFeePayerSignatureHash,

@@ -85,6 +85,7 @@ export {
   type FxRateInfoWire,
 } from './rpc/methods.js'
 export { magnusActions, type MagnusActions } from './rpc/actions.js'
+export { feeTokenHttp } from './rpc/feeTokenTransport.js'
 
 // Utilities
 export {
