@@ -22,6 +22,7 @@ var src_exports = {};
 __export(src_exports, {
   ACCOUNT_KEYCHAIN_ADDRESS: () => ACCOUNT_KEYCHAIN_ADDRESS,
   ADDRESS_REGISTRY_ADDRESS: () => ADDRESS_REGISTRY_ADDRESS,
+  CROSS_FX_PSM_ADDRESS: () => CROSS_FX_PSM_ADDRESS,
   FEE_PAYER_SIGNATURE_MAGIC_BYTE: () => FEE_PAYER_SIGNATURE_MAGIC_BYTE,
   MAGNUS_EXPIRING_NONCE_KEY: () => MAGNUS_EXPIRING_NONCE_KEY,
   MAGNUS_EXPIRING_NONCE_MAX_EXPIRY_SECS: () => MAGNUS_EXPIRING_NONCE_MAX_EXPIRY_SECS,
@@ -46,6 +47,7 @@ __export(src_exports, {
   VALIDATOR_CONFIG_ADDRESS: () => VALIDATOR_CONFIG_ADDRESS,
   VALIDATOR_CONFIG_V2_ADDRESS: () => VALIDATOR_CONFIG_V2_ADDRESS,
   convertCurrency: () => convertCurrency,
+  crossFxPSMAbi: () => crossFxPSMAbi,
   decodeFxRateInfo: () => decodeFxRateInfo,
   encodeMagnusSignature: () => encodeMagnusSignature,
   feeManagerAbi: () => feeManagerAbi,
@@ -642,12 +644,175 @@ var MIP20_FACTORY_ADDRESS = "0x20fc000000000000000000000000000000000000";
 var MIP20_ISSUER_REGISTRY_ADDRESS = "0x20fa000000000000000000000000000000000000";
 var MIP403_REGISTRY_ADDRESS = "0x403c000000000000000000000000000000000000";
 var STABLECOIN_DEX_ADDRESS = "0xdec0000000000000000000000000000000000000";
+var CROSS_FX_PSM_ADDRESS = "0xfecc000000000000000000000000000000000000";
 var NONCE_PRECOMPILE_ADDRESS = "0x4e4f4e4345000000000000000000000000000000";
 var VALIDATOR_CONFIG_ADDRESS = "0xcccccccc00000000000000000000000000000000";
 var VALIDATOR_CONFIG_V2_ADDRESS = "0xcccccccc00000000000000000000000000000001";
 var ACCOUNT_KEYCHAIN_ADDRESS = "0xaaaaaaaa00000000000000000000000000000000";
 var ADDRESS_REGISTRY_ADDRESS = "0xfdc0000000000000000000000000000000000000";
 var SIGNATURE_VERIFIER_ADDRESS = "0x5165300000000000000000000000000000000000";
+
+// src/precompiles/crossFxPSM.ts
+var crossFxPSMAbi = [
+  // ── Views ──────────────────────────────────────────────────────────────
+  {
+    type: "function",
+    name: "quoteExactIn",
+    stateMutability: "view",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" },
+      { type: "uint128", name: "amountIn" }
+    ],
+    outputs: [{ type: "uint128", name: "amountOut" }]
+  },
+  {
+    type: "function",
+    name: "quoteExactOut",
+    stateMutability: "view",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" },
+      { type: "uint128", name: "amountOut" }
+    ],
+    outputs: [{ type: "uint128", name: "amountIn" }]
+  },
+  {
+    type: "function",
+    name: "getPairConfig",
+    stateMutability: "view",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" }
+    ],
+    outputs: [
+      {
+        type: "tuple",
+        name: "",
+        components: [
+          { type: "bool", name: "registered" },
+          { type: "bool", name: "enabled" },
+          { type: "bool", name: "paused" },
+          { type: "uint16", name: "spreadBps" },
+          { type: "address", name: "baseToken" },
+          { type: "address", name: "quoteToken" }
+        ]
+      }
+    ]
+  },
+  {
+    type: "function",
+    name: "isStableTokenRegistered",
+    stateMutability: "view",
+    inputs: [{ type: "address", name: "token" }],
+    outputs: [{ type: "bool", name: "" }]
+  },
+  // ── Swap ───────────────────────────────────────────────────────────────
+  {
+    type: "function",
+    name: "swapExactIn",
+    stateMutability: "nonpayable",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" },
+      { type: "uint128", name: "amountIn" },
+      { type: "uint128", name: "minAmountOut" }
+    ],
+    outputs: [{ type: "uint128", name: "amountOut" }]
+  },
+  {
+    type: "function",
+    name: "swapExactOut",
+    stateMutability: "nonpayable",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" },
+      { type: "uint128", name: "amountOut" },
+      { type: "uint128", name: "maxAmountIn" }
+    ],
+    outputs: [{ type: "uint128", name: "amountIn" }]
+  },
+  // ── Swap event ─────────────────────────────────────────────────────────
+  {
+    type: "event",
+    name: "Swap",
+    inputs: [
+      { type: "address", name: "from", indexed: true },
+      { type: "string", name: "baseIn", indexed: false },
+      { type: "string", name: "quoteOut", indexed: false },
+      { type: "uint128", name: "amountIn", indexed: false },
+      { type: "uint128", name: "amountOut", indexed: false },
+      { type: "uint128", name: "rateNum", indexed: false },
+      { type: "uint128", name: "rateDen", indexed: false },
+      { type: "uint16", name: "spreadBps", indexed: false }
+    ]
+  },
+  // ── User-facing errors a swap UI decodes ───────────────────────────────
+  {
+    type: "error",
+    name: "SlippageExceeded",
+    inputs: [
+      { type: "uint128", name: "expected" },
+      { type: "uint128", name: "actual" }
+    ]
+  },
+  {
+    type: "error",
+    name: "PairNotRegistered",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" }
+    ]
+  },
+  {
+    type: "error",
+    name: "PairCurrentlyDisabled",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" }
+    ]
+  },
+  {
+    type: "error",
+    name: "PairCurrentlyPaused",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" }
+    ]
+  },
+  {
+    type: "error",
+    name: "OracleUnavailable",
+    inputs: [{ type: "string", name: "code" }]
+  },
+  {
+    type: "error",
+    name: "L0LimitExceeded",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" },
+      { type: "address", name: "token" }
+    ]
+  },
+  {
+    type: "error",
+    name: "L1LimitExceeded",
+    inputs: [
+      { type: "string", name: "baseIn" },
+      { type: "string", name: "quoteOut" },
+      { type: "address", name: "token" }
+    ]
+  },
+  {
+    type: "error",
+    name: "InsufficientReserveBacking",
+    inputs: [
+      { type: "uint256", name: "backingUsd" },
+      { type: "uint256", name: "liabilitiesUsd" }
+    ]
+  },
+  { type: "error", name: "MathOverflow", inputs: [] }
+];
 
 // src/precompiles/feeManager.ts
 var feeManagerAbi = [
@@ -1047,6 +1212,7 @@ function parseAmount(input, options) {
 0 && (module.exports = {
   ACCOUNT_KEYCHAIN_ADDRESS,
   ADDRESS_REGISTRY_ADDRESS,
+  CROSS_FX_PSM_ADDRESS,
   FEE_PAYER_SIGNATURE_MAGIC_BYTE,
   MAGNUS_EXPIRING_NONCE_KEY,
   MAGNUS_EXPIRING_NONCE_MAX_EXPIRY_SECS,
@@ -1071,6 +1237,7 @@ function parseAmount(input, options) {
   VALIDATOR_CONFIG_ADDRESS,
   VALIDATOR_CONFIG_V2_ADDRESS,
   convertCurrency,
+  crossFxPSMAbi,
   decodeFxRateInfo,
   encodeMagnusSignature,
   feeManagerAbi,
