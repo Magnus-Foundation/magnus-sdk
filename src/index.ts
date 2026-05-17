@@ -59,6 +59,7 @@ export {
 export {
   ACCOUNT_KEYCHAIN_ADDRESS,
   ADDRESS_REGISTRY_ADDRESS,
+  CROSS_FX_PSM_ADDRESS,
   MAGNUS_USD_ADDRESS,
   MIP20_FACTORY_ADDRESS,
   MIP20_ISSUER_REGISTRY_ADDRESS,
@@ -70,6 +71,7 @@ export {
   VALIDATOR_CONFIG_ADDRESS,
   VALIDATOR_CONFIG_V2_ADDRESS,
 } from './precompiles/addresses.js'
+export { crossFxPSMAbi } from './precompiles/crossFxPSM.js'
 export { feeManagerAbi } from './precompiles/feeManager.js'
 export { mip20Abi } from './precompiles/mip20.js'
 
