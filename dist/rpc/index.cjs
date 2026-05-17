@@ -22,7 +22,6 @@ var rpc_exports = {};
 __export(rpc_exports, {
   MAGNUS_RPC_METHODS: () => MAGNUS_RPC_METHODS,
   decodeFxRateInfo: () => decodeFxRateInfo,
-  feeTokenHttp: () => feeTokenHttp,
   magnusActions: () => magnusActions
 });
 module.exports = __toCommonJS(rpc_exports);
@@ -77,34 +76,10 @@ function magnusActions() {
     };
   };
 }
-
-// src/rpc/feeTokenTransport.ts
-var import_viem = require("viem");
-function feeTokenHttp(url, feeToken, config = {}) {
-  const inner = (0, import_viem.http)(url, config);
-  const transport = ((opts) => {
-    const t = inner(opts);
-    const originalRequest = t.request.bind(t);
-    return {
-      ...t,
-      request: async (args) => {
-        if ((args.method === "eth_call" || args.method === "eth_estimateGas") && Array.isArray(args.params) && args.params.length > 0 && typeof args.params[0] === "object" && args.params[0] !== null && // Don't overwrite an explicitly-set feeToken.
-        !("feeToken" in args.params[0])) {
-          const patched = [...args.params];
-          patched[0] = { ...args.params[0], feeToken };
-          return originalRequest({ ...args, params: patched });
-        }
-        return originalRequest(args);
-      }
-    };
-  });
-  return transport;
-}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   MAGNUS_RPC_METHODS,
   decodeFxRateInfo,
-  feeTokenHttp,
   magnusActions
 });
 //# sourceMappingURL=index.cjs.map

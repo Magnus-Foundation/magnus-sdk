@@ -1,5 +1,4 @@
 import { A as Address } from '../types-prim-BlJ081zG.mjs';
-import { HttpTransportConfig, HttpTransport } from 'viem';
 
 /**
  * JSON-RPC method names + I/O types for Magnus-specific endpoints.
@@ -65,40 +64,4 @@ type MagnusActions = {
  */
 declare function magnusActions(): (rawClient: unknown) => MagnusActions;
 
-/**
- * viem transport wrapper that injects Magnus's `feeToken` field into every
- * `eth_call` and `eth_estimateGas` request.
- *
- * Magnus's fee manager runs on view calls too: it inspects the request and
- * picks a MIP-20 fee token. Standard `eth_call` carries no fee_token field,
- * so the fee manager reverts with `FeeTokenNotInferable`. This wrapper
- * patches the params before they leave the client.
- *
- * Use this in place of viem's `http()` when constructing a `PublicClient`
- * for the Magnus chain:
- *
- * ```ts
- * import { createPublicClient } from 'viem'
- * import { feeTokenHttp, MAGNUS_USD_ADDRESS } from '@magnus/sdk'
- *
- * const client = createPublicClient({
- *   chain: magnusDevnet,
- *   transport: feeTokenHttp('https://staccato-rpc.magnuschain.xyz', MAGNUS_USD_ADDRESS),
- * })
- * ```
- *
- * Signed transactions are unaffected — `magnusSign` already encodes
- * `feeToken` into the type-0x76 envelope.
- */
-
-/**
- * Creates an HTTP transport that injects `feeToken` into eth_call and
- * eth_estimateGas requests for the Magnus chain.
- *
- * @param url RPC endpoint (passed through to viem's `http()`)
- * @param feeToken MIP-20 token address to declare as the fee token for reads
- * @param config optional `http()` config (timeouts, retries, headers, ...)
- */
-declare function feeTokenHttp(url: string, feeToken: Address, config?: HttpTransportConfig): HttpTransport;
-
-export { type AcceptedFeeTokens, type AcceptedFeeTokensWire, type FxRateInfo, type FxRateInfoWire, MAGNUS_RPC_METHODS, type MagnusActions, decodeFxRateInfo, feeTokenHttp, magnusActions };
+export { type AcceptedFeeTokens, type AcceptedFeeTokensWire, type FxRateInfo, type FxRateInfoWire, MAGNUS_RPC_METHODS, type MagnusActions, decodeFxRateInfo, magnusActions };

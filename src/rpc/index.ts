@@ -7,4 +7,3 @@ export {
   type FxRateInfoWire,
 } from './methods.js'
 export { magnusActions, type MagnusActions } from './actions.js'
-export { feeTokenHttp } from './feeTokenTransport.js'

@@ -1009,29 +1009,6 @@ function magnusActions() {
   };
 }
 
-// src/rpc/feeTokenTransport.ts
-import { http } from "viem";
-function feeTokenHttp(url, feeToken, config = {}) {
-  const inner = http(url, config);
-  const transport = ((opts) => {
-    const t = inner(opts);
-    const originalRequest = t.request.bind(t);
-    return {
-      ...t,
-      request: async (args) => {
-        if ((args.method === "eth_call" || args.method === "eth_estimateGas") && Array.isArray(args.params) && args.params.length > 0 && typeof args.params[0] === "object" && args.params[0] !== null && // Don't overwrite an explicitly-set feeToken.
-        !("feeToken" in args.params[0])) {
-          const patched = [...args.params];
-          patched[0] = { ...args.params[0], feeToken };
-          return originalRequest({ ...args, params: patched });
-        }
-        return originalRequest(args);
-      }
-    };
-  });
-  return transport;
-}
-
 // src/utils/currency.ts
 function divRound(num, den, mode) {
   if (den === 0n) throw new Error("currency: division by zero");
@@ -1193,7 +1170,6 @@ export {
   decodeFxRateInfo,
   encodeMagnusSignature,
   feeManagerAbi,
-  feeTokenHttp,
   formatBalance,
   formatFee,
   getMagnusFeePayerSignatureHash,
