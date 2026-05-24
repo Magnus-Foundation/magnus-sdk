@@ -13,6 +13,7 @@ declare const MIP20_ISSUER_REGISTRY_ADDRESS: Address;
 declare const MIP403_REGISTRY_ADDRESS: Address;
 declare const STABLECOIN_DEX_ADDRESS: Address;
 declare const CROSS_FX_PSM_ADDRESS: Address;
+declare const MAGNUS_BRIDGE_ADDRESS: Address;
 declare const NONCE_PRECOMPILE_ADDRESS: Address;
 declare const VALIDATOR_CONFIG_ADDRESS: Address;
 declare const VALIDATOR_CONFIG_V2_ADDRESS: Address;
@@ -404,6 +405,47 @@ declare const feeManagerAbi: readonly [{
 }];
 
 /**
+ * Magnus Bridge (MBS) precompile, the wallet's read window into bridge state.
+ *
+ * The wallet only needs to observe the inbound-finalize event in v1. Outbound,
+ * relayer, sentinel, and rotation surfaces are intentionally omitted: they are
+ * called from validator sidecars and the bridge contracts on spoke chains, not
+ * from consumer wallets.
+ *
+ * Source: `magnus/crates/evm/precompiles/src/mbs/dispatch.rs` and
+ * `magnus/crates/bridge/src/types.rs` (event payload).
+ */
+declare const magnusBridgeAbi: readonly [{
+    readonly type: "event";
+    readonly name: "DepositFinalized";
+    readonly inputs: readonly [{
+        readonly type: "uint64";
+        readonly name: "srcChainId";
+        readonly indexed: true;
+    }, {
+        readonly type: "bytes32";
+        readonly name: "intentHash";
+        readonly indexed: true;
+    }, {
+        readonly type: "address";
+        readonly name: "token";
+        readonly indexed: true;
+    }, {
+        readonly type: "address";
+        readonly name: "depositor";
+        readonly indexed: false;
+    }, {
+        readonly type: "address";
+        readonly name: "dstAccount";
+        readonly indexed: false;
+    }, {
+        readonly type: "uint256";
+        readonly name: "amount";
+        readonly indexed: false;
+    }];
+}];
+
+/**
  * MIP-20 token ABI — superset of ERC-20 with Magnus-specific metadata + memo
  * variants. Use this for any stablecoin issued via the MIP-20 factory
  * (mUSD, mEUR, mVND, ...).
@@ -609,4 +651,4 @@ declare const mip20Abi: readonly [{
     }];
 }];
 
-export { ACCOUNT_KEYCHAIN_ADDRESS, ADDRESS_REGISTRY_ADDRESS, CROSS_FX_PSM_ADDRESS, MAGNUS_USD_ADDRESS, MIP20_FACTORY_ADDRESS, MIP20_ISSUER_REGISTRY_ADDRESS, MIP403_REGISTRY_ADDRESS, MIP_FEE_MANAGER_ADDRESS, NONCE_PRECOMPILE_ADDRESS, SIGNATURE_VERIFIER_ADDRESS, STABLECOIN_DEX_ADDRESS, VALIDATOR_CONFIG_ADDRESS, VALIDATOR_CONFIG_V2_ADDRESS, crossFxPSMAbi, feeManagerAbi, mip20Abi };
+export { ACCOUNT_KEYCHAIN_ADDRESS, ADDRESS_REGISTRY_ADDRESS, CROSS_FX_PSM_ADDRESS, MAGNUS_BRIDGE_ADDRESS, MAGNUS_USD_ADDRESS, MIP20_FACTORY_ADDRESS, MIP20_ISSUER_REGISTRY_ADDRESS, MIP403_REGISTRY_ADDRESS, MIP_FEE_MANAGER_ADDRESS, NONCE_PRECOMPILE_ADDRESS, SIGNATURE_VERIFIER_ADDRESS, STABLECOIN_DEX_ADDRESS, VALIDATOR_CONFIG_ADDRESS, VALIDATOR_CONFIG_V2_ADDRESS, crossFxPSMAbi, feeManagerAbi, magnusBridgeAbi, mip20Abi };

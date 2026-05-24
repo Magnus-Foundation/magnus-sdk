@@ -6,6 +6,7 @@ var MIP20_ISSUER_REGISTRY_ADDRESS = "0x20fa000000000000000000000000000000000000"
 var MIP403_REGISTRY_ADDRESS = "0x403c000000000000000000000000000000000000";
 var STABLECOIN_DEX_ADDRESS = "0xdec0000000000000000000000000000000000000";
 var CROSS_FX_PSM_ADDRESS = "0xfecc000000000000000000000000000000000000";
+var MAGNUS_BRIDGE_ADDRESS = "0xb12d000000000000000000000000000000000000";
 var NONCE_PRECOMPILE_ADDRESS = "0x4e4f4e4345000000000000000000000000000000";
 var VALIDATOR_CONFIG_ADDRESS = "0xcccccccc00000000000000000000000000000000";
 var VALIDATOR_CONFIG_V2_ADDRESS = "0xcccccccc00000000000000000000000000000001";
@@ -251,6 +252,22 @@ var feeManagerAbi = [
   }
 ];
 
+// src/precompiles/magnusBridge.ts
+var magnusBridgeAbi = [
+  {
+    type: "event",
+    name: "DepositFinalized",
+    inputs: [
+      { type: "uint64", name: "srcChainId", indexed: true },
+      { type: "bytes32", name: "intentHash", indexed: true },
+      { type: "address", name: "token", indexed: true },
+      { type: "address", name: "depositor", indexed: false },
+      { type: "address", name: "dstAccount", indexed: false },
+      { type: "uint256", name: "amount", indexed: false }
+    ]
+  }
+];
+
 // src/precompiles/mip20.ts
 var mip20Abi = [
   // ERC-20 surface
@@ -392,6 +409,7 @@ export {
   ACCOUNT_KEYCHAIN_ADDRESS,
   ADDRESS_REGISTRY_ADDRESS,
   CROSS_FX_PSM_ADDRESS,
+  MAGNUS_BRIDGE_ADDRESS,
   MAGNUS_USD_ADDRESS,
   MIP20_FACTORY_ADDRESS,
   MIP20_ISSUER_REGISTRY_ADDRESS,
@@ -404,6 +422,7 @@ export {
   VALIDATOR_CONFIG_V2_ADDRESS,
   crossFxPSMAbi,
   feeManagerAbi,
+  magnusBridgeAbi,
   mip20Abi
 };
 //# sourceMappingURL=index.mjs.map

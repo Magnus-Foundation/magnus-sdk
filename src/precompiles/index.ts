@@ -2,6 +2,7 @@ export {
   ACCOUNT_KEYCHAIN_ADDRESS,
   ADDRESS_REGISTRY_ADDRESS,
   CROSS_FX_PSM_ADDRESS,
+  MAGNUS_BRIDGE_ADDRESS,
   MAGNUS_USD_ADDRESS,
   MIP20_FACTORY_ADDRESS,
   MIP20_ISSUER_REGISTRY_ADDRESS,
@@ -15,4 +16,5 @@ export {
 } from './addresses.js'
 export { crossFxPSMAbi } from './crossFxPSM.js'
 export { feeManagerAbi } from './feeManager.js'
+export { magnusBridgeAbi } from './magnusBridge.js'
 export { mip20Abi } from './mip20.js'
