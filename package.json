@@ -36,6 +36,11 @@
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.mjs",
       "require": "./dist/utils/index.cjs"
+    },
+    "./bridge": {
+      "types": "./dist/bridge/index.d.ts",
+      "import": "./dist/bridge/index.mjs",
+      "require": "./dist/bridge/index.cjs"
     }
   },
   "files": [

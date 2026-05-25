@@ -8,6 +8,7 @@ export default defineConfig({
     'precompiles/index': 'src/precompiles/index.ts',
     'rpc/index': 'src/rpc/index.ts',
     'utils/index': 'src/utils/index.ts',
+    'bridge/index': 'src/bridge/index.ts',
   },
   format: ['esm', 'cjs'],
   dts: true,
