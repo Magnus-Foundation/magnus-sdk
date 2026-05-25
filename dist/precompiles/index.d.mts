@@ -443,6 +443,65 @@ declare const magnusBridgeAbi: readonly [{
         readonly name: "amount";
         readonly indexed: false;
     }];
+}, {
+    readonly type: "function";
+    readonly name: "withdraw";
+    readonly stateMutability: "nonpayable";
+    readonly inputs: readonly [{
+        readonly type: "tuple";
+        readonly name: "intent";
+        readonly components: readonly [{
+            readonly type: "address";
+            readonly name: "token";
+        }, {
+            readonly type: "uint256";
+            readonly name: "amount";
+        }, {
+            readonly type: "uint64";
+            readonly name: "dstChainId";
+        }, {
+            readonly type: "address";
+            readonly name: "dstAddress";
+        }, {
+            readonly type: "uint256";
+            readonly name: "maxFee";
+        }, {
+            readonly type: "uint64";
+            readonly name: "deadline";
+        }];
+    }];
+    readonly outputs: readonly [{
+        readonly type: "bytes32";
+        readonly name: "intentHash";
+    }];
+}, {
+    readonly type: "event";
+    readonly name: "PayoutAck";
+    readonly inputs: readonly [{
+        readonly type: "uint64";
+        readonly name: "dstChainId";
+        readonly indexed: true;
+    }, {
+        readonly type: "bytes32";
+        readonly name: "intentHash";
+        readonly indexed: true;
+    }, {
+        readonly type: "address";
+        readonly name: "token";
+        readonly indexed: true;
+    }, {
+        readonly type: "address";
+        readonly name: "dstAddress";
+        readonly indexed: false;
+    }, {
+        readonly type: "uint256";
+        readonly name: "amount";
+        readonly indexed: false;
+    }, {
+        readonly type: "bytes32";
+        readonly name: "claimTxHash";
+        readonly indexed: false;
+    }];
 }];
 
 /**
