@@ -25,9 +25,9 @@ describe('recoverIntentSigner', () => {
     const td = buildIntentTypedData({ bridgeAddress, chainId, intent })
     const sig = (await account.signTypedData({
       domain: td.domain,
-      types: { Intent: [...td.types.Intent] },
-      primaryType: 'Intent',
-      message: { ...intent } as any,
+      types: { DepositIntent: [...td.types.DepositIntent] },
+      primaryType: 'DepositIntent',
+      message: td.message as any,
     })) as Hex
 
     const recovered = await recoverIntentSigner({ bridgeAddress, chainId, intent, sig })

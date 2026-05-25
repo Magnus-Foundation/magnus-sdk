@@ -20,7 +20,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/bridge/index.ts
 var bridge_exports = {};
 __export(bridge_exports, {
-  INTENT_FIELDS: () => INTENT_FIELDS,
+  DEPOSIT_INTENT_FIELDS: () => DEPOSIT_INTENT_FIELDS,
   buildErc2612TypedData: () => buildErc2612TypedData,
   buildIntentTypedData: () => buildIntentTypedData,
   encodeErc2612PermitData: () => encodeErc2612PermitData,
@@ -115,8 +115,7 @@ function buildErc2612TypedData(args) {
 }
 
 // src/bridge/permit/intentTypedData.ts
-var INTENT_FIELDS = [
-  { name: "depositor", type: "address" },
+var DEPOSIT_INTENT_FIELDS = [
   { name: "token", type: "address" },
   { name: "amount", type: "uint256" },
   { name: "magnusRecipient", type: "bytes20" },
@@ -133,7 +132,7 @@ var DOMAIN_FIELDS2 = [
 function buildIntentTypedData(args) {
   const { intent } = args;
   return {
-    primaryType: "Intent",
+    primaryType: "DepositIntent",
     domain: {
       name: "MagnusBridge",
       version: "1",
@@ -142,10 +141,9 @@ function buildIntentTypedData(args) {
     },
     types: {
       EIP712Domain: DOMAIN_FIELDS2,
-      Intent: INTENT_FIELDS
+      DepositIntent: DEPOSIT_INTENT_FIELDS
     },
     message: {
-      depositor: intent.depositor,
       token: intent.token,
       amount: intent.amount.toString(10),
       magnusRecipient: intent.magnusRecipient,
@@ -192,15 +190,15 @@ async function recoverIntentSigner(args) {
       chainId: args.chainId,
       verifyingContract: args.bridgeAddress
     },
-    types: { Intent: [...INTENT_FIELDS] },
-    primaryType: "Intent",
+    types: { DepositIntent: [...DEPOSIT_INTENT_FIELDS] },
+    primaryType: "DepositIntent",
     message: args.intent,
     signature: args.sig
   });
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  INTENT_FIELDS,
+  DEPOSIT_INTENT_FIELDS,
   buildErc2612TypedData,
   buildIntentTypedData,
   encodeErc2612PermitData,

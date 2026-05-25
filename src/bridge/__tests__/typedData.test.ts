@@ -54,21 +54,23 @@ describe('buildIntentTypedData', () => {
     deadline: 1716643200n,
   }
 
-  it('produces the canonical Magnus Bridge Intent typed-data structure', () => {
+  it('produces the canonical Magnus Bridge DepositIntent typed-data structure', () => {
     const td = buildIntentTypedData({
       bridgeAddress: '0xca43a541f7a9512b4cb9334f09713e6de9a53a14',
       chainId: 560048,
       intent,
     })
-    expect(td.primaryType).toBe('Intent')
+    // Must match MagnusBridge.sol::INTENT_TYPEHASH exactly: primary type
+    // "DepositIntent", 6 fields, no depositor (the contract recovers + compares
+    // depositor separately). Any drift here reverts with InvalidIntentSignature().
+    expect(td.primaryType).toBe('DepositIntent')
     expect(td.domain).toEqual({
       name: 'MagnusBridge',
       version: '1',
       chainId: 560048,
       verifyingContract: '0xca43a541f7a9512b4cb9334f09713e6de9a53a14',
     })
-    expect(td.types.Intent).toEqual([
-      { name: 'depositor', type: 'address' },
+    expect(td.types.DepositIntent).toEqual([
       { name: 'token', type: 'address' },
       { name: 'amount', type: 'uint256' },
       { name: 'magnusRecipient', type: 'bytes20' },
@@ -77,7 +79,6 @@ describe('buildIntentTypedData', () => {
       { name: 'deadline', type: 'uint256' },
     ])
     expect(td.message).toEqual({
-      depositor: intent.depositor,
       token: intent.token,
       amount: '1000000',
       magnusRecipient: intent.magnusRecipient,

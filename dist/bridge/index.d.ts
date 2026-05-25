@@ -170,7 +170,7 @@ interface Erc2612TypedData {
 declare function buildErc2612TypedData(args: Erc2612Args): Erc2612TypedData;
 
 interface IntentTypedData {
-    primaryType: 'Intent';
+    primaryType: 'DepositIntent';
     domain: {
         name: 'MagnusBridge';
         version: '1';
@@ -182,13 +182,12 @@ interface IntentTypedData {
             name: string;
             type: string;
         }>;
-        Intent: Array<{
+        DepositIntent: Array<{
             name: string;
             type: string;
         }>;
     };
     message: {
-        depositor: Address;
         token: Address;
         amount: string;
         magnusRecipient: string;
@@ -197,10 +196,7 @@ interface IntentTypedData {
         deadline: string;
     };
 }
-declare const INTENT_FIELDS: readonly [{
-    readonly name: "depositor";
-    readonly type: "address";
-}, {
+declare const DEPOSIT_INTENT_FIELDS: readonly [{
     readonly name: "token";
     readonly type: "address";
 }, {
@@ -243,4 +239,4 @@ declare function recoverIntentSigner(args: {
     sig: Hex;
 }): Promise<Address>;
 
-export { type Erc2612Args, type Erc2612PermitFields, type Erc2612TypedData, INTENT_FIELDS, type IntentStatus, type IntentTypedData, type MbsIntent, type PermitEnvelope, type RelayerAccepted, type RelayerError, type RelayerSubmission, buildErc2612TypedData, buildIntentTypedData, encodeErc2612PermitData, magnusBridgeSolAbi, recoverIntentSigner };
+export { DEPOSIT_INTENT_FIELDS, type Erc2612Args, type Erc2612PermitFields, type Erc2612TypedData, type IntentStatus, type IntentTypedData, type MbsIntent, type PermitEnvelope, type RelayerAccepted, type RelayerError, type RelayerSubmission, buildErc2612TypedData, buildIntentTypedData, encodeErc2612PermitData, magnusBridgeSolAbi, recoverIntentSigner };
